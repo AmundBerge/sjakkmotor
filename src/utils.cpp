@@ -85,10 +85,26 @@ uint64_t southWestRay(int square){
     return ray;
 }
 
+uint64_t knightAttacks(int square){ // Grov kode. Vennligst ikke les
+    uint64_t attacks = 0ULL; 
+    int rank = square / 8;
+    int file = square % 8;
+    if (rank <= 5 && file <= 6){attacks |= 1ULL << (square + 17);}
+    if (rank <= 5 && file >= 1){attacks |= 1ULL << (square + 15);}
+    if (rank <= 6 && file <= 5){attacks |= 1ULL << (square + 10);}
+    if (rank <= 6 && file >= 2){attacks |= 1ULL << (square + 6);}
+    if (rank >= 2 && file <= 6){attacks |= 1ULL << (square - 15);}
+    if (rank >= 2 && file >= 1){attacks |= 1ULL << (square - 17);}
+    if (rank >= 1 && file <= 5){attacks |= 1ULL << (square - 6);}
+    if (rank >= 1 && file >= 2){attacks |= 1ULL << (square - 10);}
+    return attacks; 
+}
+
 std::array<std::array<uint64_t, 64>, 6> pieceAttacks;
 
 void initializePieceAttacks(){ 
     for (int i = 0; i < 64; i++){
+        pieceAttacks[1][i] = knightAttacks(i);
         pieceAttacks[2][i] = northEastRay(i) | northWestRay(i) | southEastRay(i) | southWestRay(i);
         pieceAttacks[3][i] = northRay(i) | southRay(i) | eastRay(i) | westRay(i); 
         pieceAttacks[4][i] = pieceAttacks[2][i] | pieceAttacks[3][i];

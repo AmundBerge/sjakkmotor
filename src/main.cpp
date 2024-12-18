@@ -5,6 +5,10 @@
 
 int main(){
     Game game = Game();
+
+    printBitboard(game.board.whitePawns);
+    printBitboard(game.board.blackRooks);
+
     /* printBitboard(game.board.whitePawns);
     printBitboard(game.board.whiteKnights);
     printBitboard(game.board.whiteBishops);
@@ -37,6 +41,6 @@ int main(){
 
     initializePieceAttacks();
     for (int i = 0; i < 64; i++){
-        printBitboard(pieceAttacks[4][i]);
+        printBitboard(pieceAttacks[1][i]);
     }
 }

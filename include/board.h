@@ -49,6 +49,8 @@ struct GameState {
     uint64_t whitePieces; 
     uint64_t blackPieces; 
 
+    uint64_t occupiedSquares;
+
     bool whiteToMove; 
 
     bool whiteCanCastleShort; 

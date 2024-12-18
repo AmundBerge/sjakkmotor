@@ -22,6 +22,8 @@ void Game::initializeBoard(){
     board.whitePieces = board.whitePawns | board.whiteKnights | board.whiteBishops | board.whiteRooks | board.whiteQueens | board.whiteKing;
     board.blackPieces = board.blackPawns | board.blackKnights | board.blackBishops | board.blackRooks | board.blackQueens | board.blackKing;
 
+    board.occupiedSquares = board.whitePieces | board.blackPieces; 
+    
     board.whiteToMove = true;
 
     board.whiteCanCastleShort = true;

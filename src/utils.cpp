@@ -2,6 +2,7 @@
 
 #include <cstdint> 
 #include <iostream> 
+#include <array>
 
 
 void printBitboard(uint64_t bitboard){
@@ -12,4 +13,84 @@ void printBitboard(uint64_t bitboard){
         std::cout << std::endl;
     }
     std::cout << std::endl;
+}
+
+uint64_t northRay(int square){
+    uint64_t ray = 0ULL;
+    for (int r = square + 8; r < 64; r += 8){
+        ray |= 1ULL << r;
+    }
+    return ray; 
+}
+
+uint64_t southRay(int square){
+    uint64_t ray = 0ULL;
+    for (int r = square - 8; r >= 0; r -= 8){
+        ray |= 1ULL << r;
+    }
+    return ray; 
+}
+
+uint64_t eastRay(int square){
+    uint64_t ray = 0ULL;
+    int file = square % 8;
+    for (int f = file + 1; f < 8; f++){
+        ray |= 1ULL << (square + f - file);
+    }
+    return ray; 
+}
+
+uint64_t westRay(int square){
+    uint64_t ray = 0ULL;
+    int file = square % 8;
+    for (int f = file - 1; f >= 0; f--){
+        ray |= 1ULL << (square + f - file);
+    }
+    return ray; 
+}
+
+uint64_t northEastRay(int square){
+    uint64_t ray = 0ULL;
+    int file = square % 8; 
+    for (int r = square + 8, f = file + 1; r < 64 && f < 8; r += 8, f++){
+        ray |= 1ULL << (r + f - file);
+    }
+    return ray;
+}
+
+uint64_t northWestRay(int square){
+    uint64_t ray = 0ULL;
+    int file = square % 8; 
+    for (int r = square + 8, f = file - 1; r < 64 && f >= 0; r += 8, f--){
+        ray |= 1ULL << (r + f - file);
+    }
+    return ray;
+}
+
+uint64_t southEastRay(int square){
+    uint64_t ray = 0ULL;
+    int file = square % 8; 
+    for (int r = square - 8, f = file + 1; r >= 0 && f < 8; r -= 8, f++){
+        ray |= 1ULL << (r + f - file);
+    }
+    return ray;
+}
+
+uint64_t southWestRay(int square){
+    uint64_t ray = 0ULL;
+    int file = square % 8; 
+    for (int r = square - 8, f = file - 1; r >= 0 && f >= 0; r -= 8, f--){
+        ray |= 1ULL << (r + f - file);
+    }
+    return ray;
+}
+
+std::array<std::array<uint64_t, 64>, 6> pieceAttacks;
+
+void initializePieceAttacks(){ 
+    for (int i = 0; i < 64; i++){
+        pieceAttacks[2][i] = northEastRay(i) | northWestRay(i) | southEastRay(i) | southWestRay(i);
+        pieceAttacks[3][i] = northRay(i) | southRay(i) | eastRay(i) | westRay(i); 
+        pieceAttacks[4][i] = pieceAttacks[2][i] | pieceAttacks[3][i];
+    }
 }

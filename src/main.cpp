@@ -41,6 +41,6 @@ int main(){
 
     initializePieceAttacks();
     for (int i = 0; i < 64; i++){
-        printBitboard(pieceAttacks[1][i]);
+        printBitboard(pieceAttacks[5][i]);
     }
 }

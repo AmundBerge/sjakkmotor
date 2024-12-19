@@ -85,7 +85,8 @@ uint64_t southWestRay(int square){
     return ray;
 }
 
-uint64_t knightAttacks(int square){ // Grov kode. Vennligst ikke les
+// må skrives om. kan bruke arr[8] = ... og sjekke |diff| 
+uint64_t knightAttacks(int square){
     uint64_t attacks = 0ULL; 
     int rank = square / 8;
     int file = square % 8;
@@ -100,6 +101,26 @@ uint64_t knightAttacks(int square){ // Grov kode. Vennligst ikke les
     return attacks; 
 }
 
+uint64_t kingAttacks(int square){
+    uint64_t attacks = 0ULL;
+    static const int kingOffsets[8] = {1, 7, 8, 9, -1, -7, -8, -9};
+    int rank = square / 8;
+    int file = square % 8; 
+
+    for (int i = 0; i < sizeof(kingOffsets) / sizeof(kingOffsets[0]); ++i){
+        int offset = kingOffsets[i];
+        int destinationSquare = square + offset;
+        int destinationRank = destinationSquare / 8;
+        int destinationFile = destinationSquare % 8; 
+        if (std::abs(destinationRank - rank) <= 1 && std::abs(destinationFile - file) <= 1 && destinationSquare >= 0 && destinationSquare < 64){
+            attacks |= 1ULL << (square + offset);
+        }
+    }
+
+    return attacks;
+    
+}
+
 std::array<std::array<uint64_t, 64>, 6> pieceAttacks;
 
 void initializePieceAttacks(){ 
@@ -108,5 +129,6 @@ void initializePieceAttacks(){
         pieceAttacks[2][i] = northEastRay(i) | northWestRay(i) | southEastRay(i) | southWestRay(i);
         pieceAttacks[3][i] = northRay(i) | southRay(i) | eastRay(i) | westRay(i); 
         pieceAttacks[4][i] = pieceAttacks[2][i] | pieceAttacks[3][i];
+        pieceAttacks[5][i] = kingAttacks(i);
     }
 }

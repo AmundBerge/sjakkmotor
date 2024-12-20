@@ -85,20 +85,24 @@ uint64_t southWestRay(int square){
     return ray;
 }
 
-// må skrives om. kan bruke arr[8] = ... og sjekke |diff| 
 uint64_t knightAttacks(int square){
-    uint64_t attacks = 0ULL; 
+    uint64_t attacks = 0ULL;
+    static const int knightOffsets[8] = {17, 10, -6, -15, -17, -10, 6, 15};
     int rank = square / 8;
-    int file = square % 8;
-    if (rank <= 5 && file <= 6){attacks |= 1ULL << (square + 17);}
-    if (rank <= 5 && file >= 1){attacks |= 1ULL << (square + 15);}
-    if (rank <= 6 && file <= 5){attacks |= 1ULL << (square + 10);}
-    if (rank <= 6 && file >= 2){attacks |= 1ULL << (square + 6);}
-    if (rank >= 2 && file <= 6){attacks |= 1ULL << (square - 15);}
-    if (rank >= 2 && file >= 1){attacks |= 1ULL << (square - 17);}
-    if (rank >= 1 && file <= 5){attacks |= 1ULL << (square - 6);}
-    if (rank >= 1 && file >= 2){attacks |= 1ULL << (square - 10);}
-    return attacks; 
+    int file = square % 8; 
+
+    for (int i = 0; i < sizeof(knightOffsets) / sizeof(knightOffsets[0]); ++i){
+        int offset = knightOffsets[i];
+        int destinationSquare = square + offset;
+        int destinationRank = destinationSquare / 8;
+        int destinationFile = destinationSquare % 8; 
+        if (std::abs(destinationRank - rank) <= 2 && std::abs(destinationFile - file) <= 2 && destinationSquare >= 0 && destinationSquare < 64){
+            attacks |= 1ULL << (square + offset);
+        }
+    }
+
+    return attacks;
+    
 }
 
 uint64_t kingAttacks(int square){

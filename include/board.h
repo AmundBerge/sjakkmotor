@@ -63,11 +63,8 @@ struct GameState {
     int halfMoveCounter; 
     int fullMoveCounter; 
 
-    std::vector<Move> moveHistory; 
+    std::vector<uint16_t> moveHistory; 
 
 };
-
-
-
 
 #endif 

@@ -12,7 +12,7 @@ void Game::initializeBoard(){
     board.whiteRooks = 0x0000000000000081;
     board.whiteQueens = 0x0000000000000008;
     board.whiteKing = 0x0000000000000010;
-    board.blackPawns = 0x00FF000000000000;
+    board.blackPawns = 0x00FF000000000000; 
     board.blackKnights = 0x4200000000000000;
     board.blackBishops = 0x2400000000000000;
     board.blackRooks = 0x8100000000000000;

@@ -136,3 +136,66 @@ void initializePieceAttacks(){
         pieceAttacks[5][i] = kingAttacks(i);
     }
 }
+
+std::array<std::array<uint64_t, 64>, 6> blockers;
+
+uint64_t bishopBlockers(int square){
+    uint64_t ray = 0ULL;
+    int file = square % 8;
+    for (int r = square + 8, f = file + 1; r < 56 && f < 7; r += 8, f++){
+        ray |= 1ULL << (r + f - file);
+    }
+    for (int r = square - 8, f = file - 1; r >= 8 && f >= 1; r -= 8, f--){
+        ray |= 1ULL << (r + f - file);
+    }
+    for (int r = square + 8, f = file - 1; r < 56 && f >= 1; r += 8, f--){
+        ray |= 1ULL << (r + f - file);
+    }
+    for (int r = square - 8, f = file + 1; r >= 8 && f < 7; r -= 8, f++){
+        ray |= 1ULL << (r + f - file);
+    }
+    return ray; 
+}
+
+uint64_t rookBlockers(int square){
+    uint64_t ray = 0ULL;
+    int rank = square / 8;
+    int file = square % 8;
+    for (int r = rank + 1; r < 7; r++){
+        ray |= 1ULL << (square + (r - rank) * 8);
+    }
+    for (int r = rank - 1; r > 0; r--){
+        ray |= 1ULL << (square + (r - rank) * 8);
+    }
+    for (int f = file + 1; f < 7; f++){
+        ray |= 1ULL << (square + f - file);
+    }
+    for (int f = file - 1; f > 0; f--){
+        ray |= 1ULL << (square + f - file);
+    }
+    return ray;
+}
+
+/*  uint64_t ray = 0ULL; 
+    int file = square % 8; 
+    for (int f = file + 1; f < 7; f++){
+        ray |= 1ULL << (square + f - file);
+    }
+    for (int f = file - 1; f >= 1; f--){
+        ray |= 1ULL << (square + f - file);
+    }
+    for (int r = square + 8; r < 56; r++){
+        ray |= 1ULL << r;
+    }
+    for (int r = square - 8; r >= 8; r--){
+        ray |= 1ULL << r;
+    }
+    return ray; */
+
+void initializeBlockers(){
+    for (int i = 0; i < 64; i++){
+        blockers[2][i] = bishopBlockers(i);
+        blockers[3][i] = rookBlockers(i);
+        blockers[4][i] = blockers[2][i] | blockers[3][i];
+    }
+}

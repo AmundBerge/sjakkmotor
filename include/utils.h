@@ -25,10 +25,11 @@ uint64_t rookBlockers(int square);
 
 extern std::array<std::array<uint64_t, 64>, 6> pieceAttacks; // 1=N, 2=B, 3=R, 4=Q, 5=K
 extern std::array<std::array<uint64_t, 64>, 6> blockers;
+extern std::array<std::array<uint64_t, 64>, 64> behind;
 
 void initializePieceAttacks(); 
 void initializeBlockers();
-
+void initializeBehind();
 
 
 #endif

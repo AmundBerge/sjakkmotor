@@ -176,26 +176,54 @@ uint64_t rookBlockers(int square){
     return ray;
 }
 
-/*  uint64_t ray = 0ULL; 
-    int file = square % 8; 
-    for (int f = file + 1; f < 7; f++){
-        ray |= 1ULL << (square + f - file);
-    }
-    for (int f = file - 1; f >= 1; f--){
-        ray |= 1ULL << (square + f - file);
-    }
-    for (int r = square + 8; r < 56; r++){
-        ray |= 1ULL << r;
-    }
-    for (int r = square - 8; r >= 8; r--){
-        ray |= 1ULL << r;
-    }
-    return ray; */
-
 void initializeBlockers(){
     for (int i = 0; i < 64; i++){
         blockers[2][i] = bishopBlockers(i);
         blockers[3][i] = rookBlockers(i);
         blockers[4][i] = blockers[2][i] | blockers[3][i];
+    }
+}
+
+std::array<std::array<uint64_t, 64>, 64> behind;
+
+void initializeBehind(){
+    for (int i = 0; i < 64; i++){
+        for (int j = 0; j < 64; j++){
+            behind[i][j] = 0ULL;
+            if (i == j){
+                continue;
+            }
+            int i_r = i / 8;
+            int i_f = i % 8;
+            int j_r = j / 8;
+            int j_f = j % 8;
+            if (i_r == j_r){
+                if (i_f > j_f){
+                    for (int k = j_f - 1; k >= 0; k--){
+                        behind[i][j] |= 1ULL << (j + j_f - k);
+                    }
+                } else {
+                    for (int k = j_f + 1; k < 8; k++){
+                        behind[i][j] |= 1ULL << (j - j_f + k);
+                    }
+                }
+            } else if (i_f == j_f){
+                if (i_r > j_r){
+                    for (int k = j_r - 1; k >= 0; k--){
+                        behind[i][j] |= 1ULL << (j - (j_r - k) * 8);
+                    }
+                } else {
+                    for (int k = j_r + 1; k < 8; k++){
+                        behind[i][j] |= 1ULL << (j + (k - j_r) * 8);
+                    }
+                }
+            } else if (abs(i_r - j_r) == abs(i_f - j_f)){
+                int r_d = (i_r > j_r) ? -1 : 1;
+                int f_d = (i_f > j_f) ? -1 : 1;
+                for (int r = j_r + r_d, f = j_f + f_d; r >= 0 && r < 8 && f >= 0 && f < 8; r = r + r_d, f = f + f_d){
+                    behind[i][j] |= 1ULL << (r * 8 + f);
+                }
+            }
+        }
     }
 }

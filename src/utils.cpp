@@ -1,4 +1,5 @@
 #include "../include/utils.h"
+#include "../include/game.h"
 
 #include <cstdint> 
 #include <iostream> 
@@ -226,4 +227,40 @@ void initializeBehind(){
             }
         }
     }
+}
+
+int getPieceBySquare(GameState board, int square){
+    uint64_t b = 1ULL << square;
+
+    if (board.whitePawns & b || board.blackPawns & b){
+        return 0;
+    }
+    if (board.whiteKnights & b || board.blackKnights & b){
+        return 1; 
+    }
+    if (board.whiteBishops & b || board.blackBishops & b){
+        return 2;
+    }
+    if (board.whiteRooks & b || board.blackRooks & b){
+        return 3;
+    }
+    if (board.whiteQueens & b || board.blackQueens & b){
+        return 4;
+    }
+    if (board.whiteKing & b || board.blackKing & b){
+        return 5;
+    }
+    return 6;
+}
+
+int getColorBySquare(GameState board, int square){
+    uint64_t b = 1ULL << square;
+
+    if (board.whitePieces & b){
+        return 1;
+    }
+    if (board.blackPieces & b){
+        return -1;
+    }
+    return 0;
 }

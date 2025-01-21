@@ -56,7 +56,90 @@ uint64_t blackSinglePawnPushTargets(GameState board){
 }
 
 uint64_t blackDoublePawnPushTargets(GameState board){
-    const uint64_t rank4 = 0x000000FF00000000;
+    const uint64_t rank5 = 0x000000FF00000000;
     uint64_t singlePushes = blackSinglePawnPushTargets(board);
-    return (singlePushes >> 8) & ~board.occupiedSquares & rank4;   
+    return (singlePushes >> 8) & ~board.occupiedSquares & rank5;   
+}
+
+uint64_t whitePawnsLeftAttackTargets(GameState board){
+    return (board.whitePawns << 7) & 0xFEFEFEFEFEFEFEFE;
+}
+
+uint64_t whitePawnsRightAttackTargets(GameState board){
+    return (board.whitePawns << 9) & 0x7F7F7F7F7F7F7F7F;
+}
+
+uint64_t blackPawnsLeftAttackTargets(GameState board){
+    return (board.blackPawns >> 7) & 0x7F7F7F7F7F7F7F7F;
+}
+
+uint64_t blackPawnsRightAttackTargets(GameState board){
+    return (board.blackPawns >> 9) & 0xFEFEFEFEFEFEFEFE;
+}
+
+std::vector<uint32_t> whitePawnsMoves(GameState board){
+    uint64_t singlePushes = whiteSinglePawnPushTargets(board);
+    uint64_t doublePushes = whiteDoublePawnPushTargets(board);
+    uint64_t whitePawnsLeft = whitePawnsLeftAttackTargets(board);
+    uint64_t whitePawnsRight = whitePawnsRightAttackTargets(board);
+
+    std::vector<uint32_t> moves;
+
+    for (uint64_t b = singlePushes; b != 0; b &= (b - 1)){
+        uint32_t mv = 0x00000000;
+        int p = __builtin_ctzll(b);
+        mv = mv & ~(0x3F << 26) | (((p - 8) & 0x3F) << 26);
+        mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+        moves.push_back(mv);
+    }
+
+    for (uint64_t b = doublePushes; b != 0; b &= (b - 1)){
+        uint32_t mv = 0x00000000;
+        int p = __builtin_ctzll(b);
+        mv = mv & ~(0x3F << 26) | (((p - 16) & 0x3F) << 26);
+        mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+        moves.push_back(mv);
+    }
+
+    for (uint64_t b = whitePawnsLeft; b != 0; b &= (b - 1)){
+        int p = __builtin_ctzll(b);
+        int cl = getColorBySquare(board, p);
+        if (cl >= 0){
+            continue;
+        }
+        int pc = getPieceBySquare(board, p);
+        uint32_t mv = 0x00000000;
+        mv = mv & ~(0x3F << 26) | (((p - 7) & 0x3F) << 26);
+        mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
+        moves.push_back(mv);
+        if (p >= 56){
+            for (int i = 1; i < 5; i++){
+                uint32_t m = mv | ((i & 0x7) << 14);
+                moves.push_back(m);
+            }
+        }
+    }
+
+    for (uint64_t b = whitePawnsRight; b != 0; b &= (b - 1)){
+        int p = __builtin_ctzll(b);
+        int cl = getColorBySquare(board, p);
+        if (cl >= 0){
+            continue;
+        }
+        int pc = getPieceBySquare(board, p);
+        uint32_t mv = 0x00000000;
+        mv = mv & ~(0x3F << 26) | (((p - 7) & 0x3F) << 26);
+        mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
+        moves.push_back(mv);
+        if (p >= 56){
+            for (int i = 1; i < 5; i++){
+                uint32_t m = mv | ((i & 0x7) << 14);
+                moves.push_back(m);
+            }
+        }
+    }
+
+    return moves;
 }

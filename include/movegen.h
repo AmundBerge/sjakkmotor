@@ -17,5 +17,11 @@ uint64_t whiteSinglePawnPushTargets(GameState board);
 uint64_t whiteDoublePawnPushTargets(GameState board);
 uint64_t blackSinglePawnPushTargets(GameState board);
 uint64_t blackDoublePawnPushTargets(GameState board);
+uint64_t whitePawnsLeftAttackTargets(GameState board);
+uint64_t whitePawnsRightAttackTargets(GameState board);
+uint64_t blackPawnsLeftAttackTargets(GameState board);
+uint64_t blackPawnsRightAttackTargets(GameState board);
+
+std::vector<uint32_t> whitePawnsMoves(GameState board);
 
 #endif

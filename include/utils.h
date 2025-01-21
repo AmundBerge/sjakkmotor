@@ -3,6 +3,7 @@
 
 #include <cstdint> 
 #include <array> 
+#include "../include/board.h"
 
 
 void printBitboard(uint64_t bitboard);
@@ -31,5 +32,7 @@ void initializePieceAttacks();
 void initializeBlockers();
 void initializeBehind();
 
+int getPieceBySquare(GameState board, int square);
+int getColorBySquare(GameState board, int square);
 
 #endif

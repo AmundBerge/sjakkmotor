@@ -41,6 +41,63 @@ uint64_t slidingPieceAttacks(GameState board, int piece, int square){
     return ts;
 }
 
+std::vector<uint32_t> bishopMoves(GameState board, int square){
+    std::vector<uint32_t> moves;
+    int pccl = getColorBySquare(board, square);
+    uint64_t ts = slidingPieceAttacks(board, 2, square);
+    for (uint64_t b = ts; b != 0; b &= (b - 1)){
+        int sq = __builtin_ctzll(b);
+        int cl = getColorBySquare(board, sq);
+        if (pccl + cl != 0 || std::abs(cl) == 0){
+            continue;
+        }
+        uint32_t mv = 0x00000000;
+        int pc = getPieceBySquare(board, sq);
+        mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
+        mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 26);
+        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
+        moves.push_back(mv);
+    }
+}
+
+std::vector<uint32_t> rookMoves(GameState board, int square){
+    std::vector<uint32_t> moves;
+    int pccl = getColorBySquare(board, square);
+    uint64_t ts = slidingPieceAttacks(board, 3, square);
+    for (uint64_t b = ts; b != 0; b &= (b - 1)){
+        int sq = __builtin_ctzll(b);
+        int cl = getColorBySquare(board, sq);
+        if (pccl + cl != 0 || std::abs(cl) == 0){
+            continue;
+        }
+        uint32_t mv = 0x00000000;
+        int pc = getPieceBySquare(board, sq);
+        mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
+        mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 26);
+        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
+        moves.push_back(mv);
+    }
+}
+
+std::vector<uint32_t> queenMoves(GameState board, int square){
+    std::vector<uint32_t> moves;
+    int pccl = getColorBySquare(board, square);
+    uint64_t ts = slidingPieceAttacks(board, 4, square);
+    for (uint64_t b = ts; b != 0; b &= (b - 1)){
+        int sq = __builtin_ctzll(b);
+        int cl = getColorBySquare(board, sq);
+        if (pccl + cl != 0 || std::abs(cl) == 0){
+            continue;
+        }
+        uint32_t mv = 0x00000000;
+        int pc = getPieceBySquare(board, sq);
+        mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
+        mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 26);
+        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
+        moves.push_back(mv);
+    }
+}
+
 uint64_t whiteSinglePawnPushTargets(GameState board){
     return (board.whitePawns << 8) & ~board.occupiedSquares;
 }

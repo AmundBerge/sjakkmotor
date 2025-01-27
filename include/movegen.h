@@ -9,7 +9,9 @@
 #include <cstdint> 
 
 
-std::vector<uint16_t> getPlayerMoves(GameState board); 
+std::vector<uint32_t> getPlayerMoves(GameState board); 
+
+std::vector<uint32_t> knightMoves(GameState board, int sq);
 
 uint64_t slidingPieceAttacks(GameState board, int pc, int sq);
 std::vector<uint32_t> bishopMoves(GameState board, int sq);
@@ -26,6 +28,7 @@ uint64_t whitePawnsRightAttackTargets(GameState board);
 uint64_t blackPawnsLeftAttackTargets(GameState board);
 uint64_t blackPawnsRightAttackTargets(GameState board);
 
-std::vector<uint32_t> whitePawnsMoves(GameState board);
+std::vector<uint32_t> whitePawnMoves(GameState board);
+std::vector<uint32_t> blackPawnMoves(GameState board);
 
 #endif

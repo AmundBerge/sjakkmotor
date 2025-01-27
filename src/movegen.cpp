@@ -40,22 +40,22 @@ uint64_t slidingPieceAttacks(GameState board, int piece, int square){
     }
     return ts;
 }
-
-std::vector<uint32_t> bishopMoves(GameState board, int square){
+// b, r, q moves kan skrives som én funksjon
+std::vector<uint32_t> bishopMoves(GameState board, int square){ 
     std::vector<uint32_t> moves;
     int pccl = getColorBySquare(board, square);
     uint64_t ts = slidingPieceAttacks(board, 2, square);
     for (uint64_t b = ts; b != 0; b &= (b - 1)){
         int sq = __builtin_ctzll(b);
         int cl = getColorBySquare(board, sq);
-        if (pccl + cl != 0 || std::abs(cl) == 0){
+        if (pccl == cl){
             continue;
         }
         uint32_t mv = 0x00000000;
         int pc = getPieceBySquare(board, sq);
         mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
-        mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 26);
-        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
+        mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 20);
+        mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
         moves.push_back(mv);
     }
 }
@@ -67,14 +67,14 @@ std::vector<uint32_t> rookMoves(GameState board, int square){
     for (uint64_t b = ts; b != 0; b &= (b - 1)){
         int sq = __builtin_ctzll(b);
         int cl = getColorBySquare(board, sq);
-        if (pccl + cl != 0 || std::abs(cl) == 0){
+        if (pccl == cl){ // dette er feil, må fikses
             continue;
         }
         uint32_t mv = 0x00000000;
         int pc = getPieceBySquare(board, sq);
         mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
-        mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 26);
-        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
+        mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 20);
+        mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
         moves.push_back(mv);
     }
 }
@@ -86,14 +86,33 @@ std::vector<uint32_t> queenMoves(GameState board, int square){
     for (uint64_t b = ts; b != 0; b &= (b - 1)){
         int sq = __builtin_ctzll(b);
         int cl = getColorBySquare(board, sq);
-        if (pccl + cl != 0 || std::abs(cl) == 0){
+        if (pccl == cl){
             continue;
         }
         uint32_t mv = 0x00000000;
         int pc = getPieceBySquare(board, sq);
         mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
-        mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 26);
-        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
+        mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 20);
+        mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
+        moves.push_back(mv);
+    }
+}
+
+std::vector<uint32_t> kingMoves(GameState board, int square){
+    std::vector<uint32_t> moves;
+    uint64_t kingTargets = pieceAttacks[5][square];
+    int pccl = getColorBySquare(board, square);
+    for (uint64_t b = kingTargets; b != 0; b &= (b - 1)){
+        int sq = __builtin_ctzll(b);
+        int cl = getColorBySquare(board, sq);
+        if (pccl == cl){
+            continue;
+        }
+        uint32_t mv = 0x00000000;
+        int pc = getPieceBySquare(board, sq);
+        mv = mv & ~(0x3F << 26) | ((square & 0x3f) << 26);
+        mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 20);
+        mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
         moves.push_back(mv);
     }
 }
@@ -172,7 +191,7 @@ std::vector<uint32_t> whitePawnsMoves(GameState board){
         moves.push_back(mv);
         if (p >= 56){
             for (int i = 1; i < 5; i++){
-                uint32_t m = mv | ((i & 0x7) << 14);
+                uint32_t m = mv | ((i & 0x3) << 15);
                 moves.push_back(m);
             }
         }
@@ -192,7 +211,7 @@ std::vector<uint32_t> whitePawnsMoves(GameState board){
         moves.push_back(mv);
         if (p >= 56){
             for (int i = 1; i < 5; i++){
-                uint32_t m = mv | ((i & 0x7) << 14);
+                uint32_t m = mv | ((i & 0x3) << 15);
                 moves.push_back(m);
             }
         }

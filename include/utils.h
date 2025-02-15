@@ -3,10 +3,16 @@
 
 #include <cstdint> 
 #include <array> 
+#include <string>
+#include <utility>
+
 #include "../include/board.h"
+#include "../include/game.h"
 
 
 void printBitboard(uint64_t bitboard);
+void printMoveSquares(uint32_t move);
+void printChessBoard(GameState board);
 
 uint64_t northRay(int square);
 uint64_t southRay(int square);
@@ -34,5 +40,8 @@ void initializeBehind();
 
 int getPieceBySquare(GameState board, int square);
 int getColorBySquare(GameState board, int square);
+
+int sq2int(std::string sq);
+std::pair<int, int> textMoveToSquares(GameState board, std::string textMove);
 
 #endif

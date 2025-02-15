@@ -4,34 +4,6 @@
 #include <cstdint> 
 #include <vector> 
 
-enum Piece {
-    None,
-    Pawn, 
-    Knight,
-    Bishop,
-    Rook,
-    Queen,
-    King
-};
-
-enum MoveType {
-    Normal,
-    Promotion,
-    ShortCastle,
-    LongCastle, 
-    EnPassant
-};
-
-
-struct Move {
-    int from;
-    int to; 
-    MoveType moveType; 
-    Piece movedPiece;
-    Piece capturedPiece;
-    Piece promotedPiece; 
-};
-
 struct GameState {
     uint64_t whitePawns;
     uint64_t blackPawns;
@@ -63,7 +35,7 @@ struct GameState {
     int halfMoveCounter; 
     int fullMoveCounter; 
 
-    std::vector<uint16_t> moveHistory; 
+    std::vector<uint32_t> moveHistory; 
 
 };
 

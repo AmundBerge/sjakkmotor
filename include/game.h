@@ -3,15 +3,19 @@
 
 #include "board.h"
 
+#include <cstdint> 
+
 class Game {
     private: 
         // GameState board;
     public: 
         Game();
         void initializeBoard();
-        void makeMove(const Move& move);
-        void undoMove();
         GameState board;
+        bool makeMove(uint32_t move);
+        bool isValidMove(uint32_t move);
+
+        void updateBitboards();
 };  
 
 

@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <vector> 
+#include <iostream>
 
 std::vector<uint32_t> getPlayerMoves(GameState board){
     std::vector<uint32_t> moves;
@@ -69,6 +70,9 @@ std::vector<uint32_t> knightMoves(GameState board, int square){
         }
         uint32_t mv = 0x00000000;
         int pc = getPieceBySquare(board, sq);
+        if (pc == -1){
+            pc = 7; 
+        }
         mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
@@ -98,6 +102,9 @@ std::vector<uint32_t> bishopMoves(GameState board, int square){
         }
         uint32_t mv = 0x00000000;
         int pc = getPieceBySquare(board, sq);
+        if (pc == -1){
+            pc = 7; 
+        }
         mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
@@ -118,6 +125,9 @@ std::vector<uint32_t> rookMoves(GameState board, int square){
         }
         uint32_t mv = 0x00000000;
         int pc = getPieceBySquare(board, sq);
+        if (pc == -1){
+            pc = 7;
+        }
         mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
@@ -138,6 +148,9 @@ std::vector<uint32_t> queenMoves(GameState board, int square){
         }
         uint32_t mv = 0x00000000;
         int pc = getPieceBySquare(board, sq);
+        if (pc == -1){
+            pc = 7;
+        }
         mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
@@ -158,6 +171,9 @@ std::vector<uint32_t> kingMoves(GameState board, int square){
         }
         uint32_t mv = 0x00000000;
         int pc = getPieceBySquare(board, sq);
+        if (pc == -1){
+            pc = 7;
+        }
         mv = mv & ~(0x3F << 26) | ((square & 0x3f) << 26);
         mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
@@ -183,23 +199,23 @@ uint64_t blackSinglePawnPushTargets(GameState board){
 uint64_t blackDoublePawnPushTargets(GameState board){
     const uint64_t rank5 = 0x000000FF00000000;
     uint64_t singlePushes = blackSinglePawnPushTargets(board);
-    return (singlePushes >> 8) & ~board.occupiedSquares & rank5;   
+    return (singlePushes >> 8) & ~board.occupiedSquares & rank5;
 }
 
 uint64_t whitePawnsLeftAttackTargets(GameState board){
-    return (board.whitePawns << 7) & 0xFEFEFEFEFEFEFEFE;
+    return (board.whitePawns << 7) & 0x7F7F7F7F7F7F7F7F;
 }
 
 uint64_t whitePawnsRightAttackTargets(GameState board){
-    return (board.whitePawns << 9) & 0x7F7F7F7F7F7F7F7F;
+    return (board.whitePawns << 9) & 0xFEFEFEFEFEFEFEFE;
 }
 
 uint64_t blackPawnsLeftAttackTargets(GameState board){
-    return (board.blackPawns >> 7) & 0x7F7F7F7F7F7F7F7F;
+    return (board.blackPawns >> 7) & 0xFEFEFEFEFEFEFEFE;
 }
 
 uint64_t blackPawnsRightAttackTargets(GameState board){
-    return (board.blackPawns >> 9) & 0xFEFEFEFEFEFEFEFE;
+    return (board.blackPawns >> 9) & 0x7F7F7F7F7F7F7F7F;
 }
 
 std::vector<uint32_t> whitePawnMoves(GameState board){
@@ -215,6 +231,7 @@ std::vector<uint32_t> whitePawnMoves(GameState board){
         int p = __builtin_ctzll(b);
         mv = mv & ~(0x3F << 26) | (((p - 8) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+        mv = mv & ~(0x7 << 17) | ((7 & 0x7) << 17);
         if (p >= 56){
             for (int i = 1; i < 5; i++){
                 uint32_t m = mv | ((i & 0x3) << 15);
@@ -230,6 +247,7 @@ std::vector<uint32_t> whitePawnMoves(GameState board){
         int p = __builtin_ctzll(b);
         mv = mv & ~(0x3F << 26) | (((p - 16) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+        mv = mv & ~(0x7 << 17) | ((7 & 0x7) << 17);
         moves.push_back(mv);
     }
 
@@ -243,7 +261,7 @@ std::vector<uint32_t> whitePawnMoves(GameState board){
         uint32_t mv = 0x00000000;
         mv = mv & ~(0x3F << 26) | (((p - 7) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
-        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
+        mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
         if (p >= 56){
             for (int i = 1; i < 5; i++){
                 uint32_t m = mv | ((i & 0x3) << 15);
@@ -262,9 +280,9 @@ std::vector<uint32_t> whitePawnMoves(GameState board){
         }
         int pc = getPieceBySquare(board, p);
         uint32_t mv = 0x00000000;
-        mv = mv & ~(0x3F << 26) | (((p - 7) & 0x3F) << 26);
+        mv = mv & ~(0x3F << 26) | (((p - 9) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
-        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
+        mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
         if (p >= 56){
             for (int i = 1; i < 5; i++){
                 uint32_t m = mv | ((i & 0x3) << 15);
@@ -289,8 +307,9 @@ std::vector<uint32_t> blackPawnMoves(GameState board){
     for (uint64_t b = singlePushes; b != 0; b &= (b - 1)){
         uint32_t mv = 0x00000000;
         int p = __builtin_ctzll(b);
-        mv = mv & ~(0x3F << 26) | (((p - 8) & 0x3F) << 26);
+        mv = mv & ~(0x3F << 26) | (((p + 8) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+        mv = mv & ~(0x7 << 17) | ((7 & 0x7) << 17);
         if (p >= 56){
             for (int i = 1; i < 5; i++){
                 uint32_t m = mv | ((i & 0x3) << 15);
@@ -304,23 +323,24 @@ std::vector<uint32_t> blackPawnMoves(GameState board){
     for (uint64_t b = doublePushes; b != 0; b &= (b - 1)){
         uint32_t mv = 0x00000000;
         int p = __builtin_ctzll(b);
-        mv = mv & ~(0x3F << 26) | (((p - 16) & 0x3F) << 26);
+        mv = mv & ~(0x3F << 26) | (((p + 16) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+        mv = mv & ~(0x7 << 17) | ((7 & 0x7) << 17);
         moves.push_back(mv);
     }
 
     for (uint64_t b = blackPawnsLeft; b != 0; b &= (b - 1)){
         int p = __builtin_ctzll(b);
         int cl = getColorBySquare(board, p);
-        if (cl >= 0){
+        if (cl <= 0){
             continue;
         }
         int pc = getPieceBySquare(board, p);
         uint32_t mv = 0x00000000;
-        mv = mv & ~(0x3F << 26) | (((p - 7) & 0x3F) << 26);
+        mv = mv & ~(0x3F << 26) | (((p + 7) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
-        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
-        if (p >= 56){
+        mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
+        if (p < 8){
             for (int i = 1; i < 5; i++){
                 uint32_t m = mv | ((i & 0x3) << 15);
                 moves.push_back(m);
@@ -333,15 +353,15 @@ std::vector<uint32_t> blackPawnMoves(GameState board){
     for (uint64_t b = blackPawnsRight; b != 0; b &= (b - 1)){
         int p = __builtin_ctzll(b);
         int cl = getColorBySquare(board, p);
-        if (cl >= 0){
+        if (cl <= 0){
             continue;
         }
         int pc = getPieceBySquare(board, p);
         uint32_t mv = 0x00000000;
-        mv = mv & ~(0x3F << 26) | (((p - 7) & 0x3F) << 26);
+        mv = mv & ~(0x3F << 26) | (((p + 9) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
-        mv = mv & ~(0x7 << 17) | (((pc + 1) & 0x7) << 17);
-        if (p >= 56){
+        mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
+        if (p < 8){
             for (int i = 1; i < 5; i++){
                 uint32_t m = mv | ((i & 0x3) << 15);
                 moves.push_back(m);

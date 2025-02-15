@@ -4,7 +4,9 @@
 #include <cstdint> 
 #include <iostream> 
 #include <array>
-
+#include <string> 
+#include <tuple> 
+#include <utility>
 
 void printBitboard(uint64_t bitboard){
     for (int i = 7; i >= 0; --i){
@@ -14,6 +16,48 @@ void printBitboard(uint64_t bitboard){
         std::cout << std::endl;
     }
     std::cout << std::endl;
+}
+
+void printMoveSquares(uint32_t move){
+    int start = (move & 0xFC000000) >> 26;
+    int end = (move & 0x03F00000) >> 20;
+    std::cout << start << " " << end << std::endl;
+}
+
+void printChessBoard(GameState board){
+    std::string out;
+    for (int i = 56; i >= 0; i -= 8){
+        for (int j = 0; j < 8; j++){
+            int pc = getPieceBySquare(board, i + j);
+            int cl = getColorBySquare(board, i + j);
+            switch (pc){
+                case -1: 
+                    out += '.';
+                    break;
+                case 0: 
+                    out += cl == 1 ? 'P' : 'p';
+                    break;
+                case 1: 
+                    out += cl == 1 ? 'N' : 'n';
+                    break;
+                case 2: 
+                    out += cl == 1 ? 'B' : 'b';
+                    break;
+                case 3: 
+                    out += cl == 1 ? 'R' : 'r';
+                    break;
+                case 4: 
+                    out += cl == 1 ? 'Q' : 'q';
+                    break;
+                case 5: 
+                    out += cl == 1 ? 'K' : 'k';
+                    break;
+            }
+            out += ' ';
+        }
+        out += '\n';
+    }
+    std::cout << out << std::endl;
 }
 
 uint64_t northRay(int square){
@@ -250,7 +294,7 @@ int getPieceBySquare(GameState board, int square){
     if (board.whiteKing & b || board.blackKing & b){
         return 5;
     }
-    return 6;
+    return -1;
 }
 
 int getColorBySquare(GameState board, int square){
@@ -263,4 +307,27 @@ int getColorBySquare(GameState board, int square){
         return -1;
     }
     return 0;
+}
+
+int sq2int(std::string square){
+    if (square.size() != 2){
+        std::cerr << "niks" << std::endl;
+    }
+    char file = square[0];
+    char rank = square[1];
+    int f = file - 'a';
+    int r = rank - '1';
+    if (f < 0 || f > 7 || r < 0 || r > 7){
+        std::cerr << "nei og nei" << std::endl;
+    }
+    return f + r * 8;
+}
+
+std::pair<int, int> textMoveToSquares(GameState board, std::string textMove){
+    if (textMove.size() != 4){
+        std::cerr << "OH NO" << std::endl;
+    }
+    int first = sq2int(textMove.substr(0, 2));
+    int second = sq2int(textMove.substr(2, 2));
+    return std::make_pair(first, second);
 }

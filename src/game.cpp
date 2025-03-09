@@ -137,6 +137,34 @@ bool Game::makeMove(uint32_t move){
         }
     }
 
+    int capturedPiece = (0x000E0000 & move) >> 17; 
+    std::cout << capturedPiece << " piece" << std::endl;
+
+    // capture
+
+    switch (capturedPiece){
+        case 0: 
+            board.whiteToMove ? board.blackPawns &= ~(1ULL << endSquare) : board.whitePawns &= ~(1ULL << endSquare);
+            break;
+        case 1: 
+            board.whiteToMove ? board.blackKnights &= ~(1ULL << endSquare) : board.whiteKnights &= ~(1ULL << endSquare);
+            break;
+        case 2: 
+            board.whiteToMove ? board.blackBishops &= ~(1ULL << endSquare) : board.whiteBishops &= ~(1ULL << endSquare);
+            break;
+        case 3: 
+            board.whiteToMove ? board.blackRooks &= ~(1ULL << endSquare) : board.whiteRooks &= ~(1ULL << endSquare);
+            break;
+        case 4: 
+            board.whiteToMove ? board.blackQueens &= ~(1ULL << endSquare) : board.whiteQueens &= ~(1ULL << endSquare);
+            break;
+        case 5: 
+            board.whiteToMove ? board.blackKing &= ~(1ULL << endSquare) : board.whiteKing &= ~(1ULL << endSquare);
+            break;
+        default: 
+            std::cerr << "what in the world is going on??" << std::endl;
+    }
+
     board.whiteToMove = !board.whiteToMove;
 
     updateBitboards();

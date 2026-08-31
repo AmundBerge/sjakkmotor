@@ -21,6 +21,15 @@ int main(){
 
     while (true){
         printChessBoard(game.board);
+        GameResult result = getGameResult(game.board);
+        if (result == CHECKMATE){
+            std::cout << (game.board.whiteToMove ? "Black" : "White") << " wins!" << std::endl;
+            break;
+        }
+        if (result == STALEMATE){
+            std::cout << "Stalemate!" << std::endl;
+            break; 
+        }
         std::cin >> str;
         if (str == "stop"){
             break;
@@ -41,11 +50,11 @@ int main(){
         uint32_t mv = 0x00000000;
         mv = mv & ~(0x3F << 26) | ((sqrs.first & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((sqrs.second & 0x3F) << 20);
-        bool test = game.makeMove(mv);
+        bool test = game.readUserMove(mv);
         if (test){
-            std::cout << "move success?" << std::endl;
+            //
         } else {
-            std::cout << "move failure?" << std::endl;
+            std::cout << "ERROR: move failure main.cpp" << std::endl;
         }
     }
    

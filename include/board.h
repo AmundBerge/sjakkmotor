@@ -30,7 +30,7 @@ struct GameState {
     bool blackCanCastleShort; 
     bool blackCanCastleLong; 
 
-    uint64_t enPassantSquare; 
+    int enPassantSquare; 
 
     int halfMoveCounter; 
     int fullMoveCounter; 

@@ -3,11 +3,208 @@
 #include "../include/game.h"
 #include "../include/utils.h"
 
+
 #include <cstdint>
 #include <vector> 
 #include <iostream>
 
-std::vector<uint32_t> getPlayerMoves(GameState board){
+
+bool applyMove(GameState& board, uint32_t move){
+
+    int startSquare = (move & 0xFC000000) >> 26;
+    int endSquare = (move & 0x03F00000) >> 20;
+    int cl = getColorBySquare(board, startSquare);
+    int pc = getPieceBySquare(board, startSquare);
+
+    if (board.whiteToMove){
+        if (cl != 1){
+            std::cout << "piece type error" << std::endl;
+        }
+        switch (pc){
+            case 0:
+                board.whitePawns &= ~(1ULL << startSquare);
+                board.whitePawns |= 1ULL << endSquare;
+                break;
+            case 1:
+                board.whiteKnights &= ~(1ULL << startSquare);
+                board.whiteKnights |= 1ULL << endSquare;
+                break;
+            case 2:
+                board.whiteBishops &= ~(1ULL << startSquare);
+                board.whiteBishops |= 1ULL << endSquare;
+                break;
+            case 3:
+                board.whiteRooks &= ~(1ULL << startSquare);
+                board.whiteRooks |= 1ULL << endSquare;
+                break;
+            case 4:
+                board.whiteQueens &= ~(1ULL << startSquare);
+                board.whiteQueens |= 1ULL << endSquare;
+                break;
+            case 5:
+                board.whiteKing = 1ULL << endSquare;
+                break;
+            case 6:
+                std::cout << "empty square m8" << std::endl;
+                break;
+            default:
+                std::cout << "what??" << std::endl;
+                break;
+        }
+    } else {
+        if (cl != -1){
+            std::cout << "what is happening?" << std::endl;
+        }
+        switch (pc){
+            case 0:
+                board.blackPawns &= ~(1ULL << startSquare);
+                board.blackPawns |= 1ULL << endSquare;
+                break;
+            case 1:
+                board.blackKnights &= ~(1ULL << startSquare);
+                board.blackKnights |= 1ULL << endSquare;
+                break;
+            case 2:
+                board.blackBishops &= ~(1ULL << startSquare);
+                board.blackBishops |= 1ULL << endSquare;
+                break;
+            case 3:
+
+                if (startSquare == 7){
+                    board.whiteCanCastleShort = false;
+                } else if (startSquare == 0){
+                    board.whiteCanCastleLong = false;
+                } else if (startSquare == 63){
+                    board.blackCanCastleShort = false; 
+                } else if (startSquare == 56){
+                    board.blackCanCastleLong = false; 
+                }
+
+                board.blackRooks &= ~(1ULL << startSquare);
+                board.blackRooks |= 1ULL << endSquare;
+                break;
+            case 4:
+                board.blackQueens &= ~(1ULL << startSquare);
+                board.blackQueens |= 1ULL << endSquare;
+                break;
+            case 5:
+
+                if (board.whiteToMove){
+                    board.whiteCanCastleShort = board.whiteCanCastleLong = false; 
+                } else {
+                    board.blackCanCastleShort = board.blackCanCastleLong = false; 
+                }
+                
+                board.blackKing = 1ULL << endSquare;
+                break;
+            case 6:
+                std::cout << "empty square m8" << std::endl;
+                break;
+            default:
+                std::cout << "what??" << std::endl;
+                break;
+        }
+    }
+
+    int capturedPiece = (0x000E0000 & move) >> 17; 
+
+    switch (capturedPiece){
+        case 0: 
+            board.whiteToMove ? board.blackPawns &= ~(1ULL << endSquare) : board.whitePawns &= ~(1ULL << endSquare);
+            break;
+        case 1: 
+            board.whiteToMove ? board.blackKnights &= ~(1ULL << endSquare) : board.whiteKnights &= ~(1ULL << endSquare);
+            break;
+        case 2: 
+            board.whiteToMove ? board.blackBishops &= ~(1ULL << endSquare) : board.whiteBishops &= ~(1ULL << endSquare);
+            break;
+        case 3:
+            board.whiteToMove ? board.blackRooks &= ~(1ULL << endSquare) : board.whiteRooks &= ~(1ULL << endSquare);
+            break;
+        case 4: 
+            board.whiteToMove ? board.blackQueens &= ~(1ULL << endSquare) : board.whiteQueens &= ~(1ULL << endSquare);
+            break;
+        case 5: 
+            board.whiteToMove ? board.blackKing &= ~(1ULL << endSquare) : board.whiteKing &= ~(1ULL << endSquare);
+            break;
+        case 7: 
+            break;
+        default: 
+            std::cerr << "what in the world is going on??" << std::endl;
+    }
+
+    if (move & (1u << 12)){
+        std::cout << "PROMO PROMO" << std::endl;
+        int promotedPiece = move >> 15 & 0x3;
+        switch (promotedPiece){
+            case 0:
+                board.whiteToMove ? board.whiteKnights |= 1ULL << endSquare : board.blackKnights |= 1ULL << endSquare;
+                break;
+            case 1:
+                board.whiteToMove ? board.whiteBishops |= 1ULL << endSquare : board.blackBishops |= 1ULL << endSquare;
+                break;
+            case 2:
+                board.whiteToMove ? board.whiteRooks |= 1ULL << endSquare : board.blackRooks |= 1ULL << endSquare;
+                break;
+            case 3:
+                board.whiteToMove ? board.whiteQueens |= 1ULL << endSquare : board.blackQueens |= 1ULL << endSquare;
+                break;
+            default:
+                std::cout << "ERROR: FEIL FEIL FEIL HER" << std::endl;
+                break;
+        }
+        if (board.whiteToMove){
+            board.whitePawns &= ~(1ULL << endSquare);
+        } else {
+            board.blackPawns &= ~(1ULL << endSquare);
+        } 
+    }
+
+    if (move & (1u << 13)){
+        if (board.whiteToMove){
+            board.blackPawns &= ~(1ULL << (board.enPassantSquare - 8));
+        } else {
+            board.whitePawns &= ~(1ULL << (board.enPassantSquare + 8));
+        }
+    }
+
+    board.enPassantSquare = 0;
+    if (pc == 0 && std::abs(endSquare - startSquare) == 16){
+        board.enPassantSquare = (startSquare + endSquare) / 2;
+    }
+
+    if (move == 0x10604000){
+        board.whiteRooks &= ~(1ULL << 7);
+        board.whiteRooks |= 1ULL << 5;
+    }
+
+    if (move == 0x10204000){
+        board.whiteRooks &= ~(1ULL);
+        board.whiteRooks |= 1ULL << 3;
+    }
+
+    if (move == 0xf3e04000){
+        board.blackRooks &= ~(1ULL << 63);
+        board.blackRooks |= 1ULL << 61;
+    }
+
+    if (move == 0xf3a04000){
+        board.blackRooks &= ~(1ULL << 56);
+        board.blackRooks |= 1ULL << 59;
+    }
+
+    board.moveHistory.push_back(move);
+
+    board.whitePieces = board.whitePawns | board.whiteKnights | board.whiteBishops | board.whiteRooks | board.whiteQueens | board.whiteKing;
+    board.blackPieces = board.blackPawns | board.blackKnights | board.blackBishops | board.blackRooks | board.blackQueens | board.blackKing;
+    board.occupiedSquares = board.whitePieces | board.blackPieces;
+
+    board.whiteToMove = !board.whiteToMove;
+
+    return true;
+}
+
+std::vector<uint32_t> getPlayerMoves(const GameState& board){
     std::vector<uint32_t> moves;
     uint64_t knights; 
     uint64_t bishops; 
@@ -54,11 +251,28 @@ std::vector<uint32_t> getPlayerMoves(GameState board){
     int q = __builtin_ctzll(king);
     std::vector<uint32_t> mvs = kingMoves(board, q);
     moves.insert(moves.end(), mvs.begin(), mvs.end());
-
+    
     return moves;
 }
 
-std::vector<uint32_t> knightMoves(GameState board, int square){
+std::vector<uint32_t> getLegalMoves(const GameState& board){
+    std::vector<uint32_t> pseudoMoves = getPlayerMoves(board);
+    std::vector<uint32_t> legalMoves; 
+
+    for (int i = 0; i < pseudoMoves.size(); i++){
+        GameState boardCopy(board);
+        uint32_t mv = pseudoMoves[i];
+        applyMove(boardCopy, mv);
+        uint64_t kingBoard = board.whiteToMove ? boardCopy.whiteKing : boardCopy.blackKing; 
+        if (!(kingBoard & attackedSquares(boardCopy, boardCopy.whiteToMove))){
+            legalMoves.push_back(mv);
+        }
+    }
+
+    return legalMoves;
+}
+
+std::vector<uint32_t> knightMoves(const GameState& board, int square){
     std::vector<uint32_t> moves;
     int pccl = getColorBySquare(board, square);
     uint64_t ts = pieceAttacks[1][square];
@@ -81,7 +295,7 @@ std::vector<uint32_t> knightMoves(GameState board, int square){
     return moves;
 }
 
-uint64_t slidingPieceAttacks(GameState board, int piece, int square){ 
+uint64_t slidingPieceAttacks(const GameState& board, int piece, int square){ 
     uint64_t ts = pieceAttacks[piece][square];
     for (uint64_t bb = board.occupiedSquares & blockers[piece][square]; bb != 0; bb &= (bb - 1)){
         int target = __builtin_ctzll(bb);
@@ -90,7 +304,7 @@ uint64_t slidingPieceAttacks(GameState board, int piece, int square){
     return ts;
 }
 // b, r, q moves kan skrives som én funksjon
-std::vector<uint32_t> bishopMoves(GameState board, int square){ 
+std::vector<uint32_t> bishopMoves(const GameState& board, int square){ 
     std::vector<uint32_t> moves;
     int pccl = getColorBySquare(board, square);
     uint64_t ts = slidingPieceAttacks(board, 2, square);
@@ -113,7 +327,7 @@ std::vector<uint32_t> bishopMoves(GameState board, int square){
     return moves;
 }
 
-std::vector<uint32_t> rookMoves(GameState board, int square){
+std::vector<uint32_t> rookMoves(const GameState& board, int square){
     std::vector<uint32_t> moves;
     int pccl = getColorBySquare(board, square);
     uint64_t ts = slidingPieceAttacks(board, 3, square);
@@ -136,7 +350,8 @@ std::vector<uint32_t> rookMoves(GameState board, int square){
     return moves;
 }
 
-std::vector<uint32_t> queenMoves(GameState board, int square){
+// q = b + r
+std::vector<uint32_t> queenMoves(const GameState& board, int square){
     std::vector<uint32_t> moves;
     int pccl = getColorBySquare(board, square);
     uint64_t ts = slidingPieceAttacks(board, 4, square);
@@ -159,7 +374,7 @@ std::vector<uint32_t> queenMoves(GameState board, int square){
     return moves;
 }
 
-std::vector<uint32_t> kingMoves(GameState board, int square){
+std::vector<uint32_t> kingMoves(const GameState& board, int square){
     std::vector<uint32_t> moves;
     uint64_t kingTargets = pieceAttacks[5][square];
     int pccl = getColorBySquare(board, square);
@@ -174,51 +389,85 @@ std::vector<uint32_t> kingMoves(GameState board, int square){
         if (pc == -1){
             pc = 7;
         }
-        mv = mv & ~(0x3F << 26) | ((square & 0x3f) << 26);
+        mv = mv & ~(0x3F << 26) | ((square & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((sq & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
         moves.push_back(mv);
     }
+
+    if (board.whiteToMove){
+        if (board.whiteCanCastleShort){
+            if (!(attackedSquares(board, false) & ((1ULL << 4) | (1ULL << 5) | (1ULL << 6))) && 
+                (!(board.whitePieces & (1ULL << 5) || (board.whitePieces & (1ULL << 6))))
+            ){
+                moves.push_back(0x10604000);
+            }
+        }
+        if (board.whiteCanCastleLong){
+            if (!(attackedSquares(board, false) & ((1ULL << 4) | (1ULL << 3) | (1ULL << 2))) && 
+                (!(board.whitePieces & (1ULL << 3) || (board.whitePieces & (1ULL << 2)) || (board.whitePieces & (1ULL << 1))))
+            ){
+                moves.push_back(0x10204000);
+            }
+        }
+    }
+
+    if (!board.whiteToMove){
+        if (board.blackCanCastleShort){
+            if (!(attackedSquares(board, true) & ((1ULL << 60) | (1ULL << 61) | (1ULL << 62))) &&
+                (!(board.blackPieces & (1ULL << 61) || (board.blackPieces & (1ULL << 62))))
+            ){
+                moves.push_back(0xf3e04000);
+            }
+        }
+        if (board.blackCanCastleLong){
+            if (!(attackedSquares(board, true) & ((1ULL << 60) | (1ULL << 59) | (1ULL << 58))) &&
+                (!(board.blackPieces & (1ULL << 59) || (board.blackPieces & (1ULL << 58)) || (board.blackPieces & (1ULL << 57))))
+            ){
+                moves.push_back(0xf3a04000);
+            }
+        }
+    }
     return moves;
 }
 
-uint64_t whiteSinglePawnPushTargets(GameState board){
+uint64_t whiteSinglePawnPushTargets(const GameState& board){
     return (board.whitePawns << 8) & ~board.occupiedSquares;
 }
 
-uint64_t whiteDoublePawnPushTargets(GameState board){
+uint64_t whiteDoublePawnPushTargets(const GameState& board){
     const uint64_t rank4 = 0x00000000FF000000;
     uint64_t singlePushes = whiteSinglePawnPushTargets(board);
     return (singlePushes << 8) & ~board.occupiedSquares & rank4;
 }
 
-uint64_t blackSinglePawnPushTargets(GameState board){
+uint64_t blackSinglePawnPushTargets(const GameState& board){
     return (board.blackPawns >> 8) & ~board.occupiedSquares;
 }
 
-uint64_t blackDoublePawnPushTargets(GameState board){
+uint64_t blackDoublePawnPushTargets(const GameState& board){
     const uint64_t rank5 = 0x000000FF00000000;
     uint64_t singlePushes = blackSinglePawnPushTargets(board);
     return (singlePushes >> 8) & ~board.occupiedSquares & rank5;
 }
 
-uint64_t whitePawnsLeftAttackTargets(GameState board){
+uint64_t whitePawnsLeftAttackTargets(const GameState& board){
     return (board.whitePawns << 7) & 0x7F7F7F7F7F7F7F7F;
 }
 
-uint64_t whitePawnsRightAttackTargets(GameState board){
+uint64_t whitePawnsRightAttackTargets(const GameState& board){
     return (board.whitePawns << 9) & 0xFEFEFEFEFEFEFEFE;
 }
 
-uint64_t blackPawnsLeftAttackTargets(GameState board){
+uint64_t blackPawnsLeftAttackTargets(const GameState& board){
     return (board.blackPawns >> 7) & 0xFEFEFEFEFEFEFEFE;
 }
 
-uint64_t blackPawnsRightAttackTargets(GameState board){
+uint64_t blackPawnsRightAttackTargets(const GameState& board){
     return (board.blackPawns >> 9) & 0x7F7F7F7F7F7F7F7F;
 }
 
-std::vector<uint32_t> whitePawnMoves(GameState board){
+std::vector<uint32_t> whitePawnMoves(const GameState& board){
     uint64_t singlePushes = whiteSinglePawnPushTargets(board);
     uint64_t doublePushes = whiteDoublePawnPushTargets(board);
     uint64_t whitePawnsLeft = whitePawnsLeftAttackTargets(board);
@@ -232,9 +481,11 @@ std::vector<uint32_t> whitePawnMoves(GameState board){
         mv = mv & ~(0x3F << 26) | (((p - 8) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((7 & 0x7) << 17);
+        //kan skrive blokken under bedre
         if (p >= 56){
-            for (int i = 1; i < 5; i++){
-                uint32_t m = mv | ((i & 0x3) << 15);
+            for (int i = 0; i < 4; i++){
+                uint32_t m = mv | (((i) & 0x3) << 15);
+                m |= (1u << 12); 
                 moves.push_back(m);
             }
         } else {
@@ -253,6 +504,15 @@ std::vector<uint32_t> whitePawnMoves(GameState board){
 
     for (uint64_t b = whitePawnsLeft; b != 0; b &= (b - 1)){
         int p = __builtin_ctzll(b);
+        if (p == board.enPassantSquare && board.enPassantSquare != 0){
+            uint32_t mv = 0x00000000;
+            mv = mv & ~(0x3F << 26) | (((p - 7) & 0x3F) << 26);
+            mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+            mv = mv & ~(0x7 << 17) | ((7 & 0x7) << 17);
+            mv |= (1u << 13);
+            moves.push_back(mv);
+            continue;
+        }
         int cl = getColorBySquare(board, p);
         if (cl >= 0){
             continue;
@@ -262,9 +522,11 @@ std::vector<uint32_t> whitePawnMoves(GameState board){
         mv = mv & ~(0x3F << 26) | (((p - 7) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
+        //kan skrive blokken under bedre
         if (p >= 56){
-            for (int i = 1; i < 5; i++){
-                uint32_t m = mv | ((i & 0x3) << 15);
+            for (int i = 0; i < 4; i++){
+                uint32_t m = mv | (((i) & 0x3) << 15);
+                m |= (1u << 12); 
                 moves.push_back(m);
             }
         } else {
@@ -274,6 +536,15 @@ std::vector<uint32_t> whitePawnMoves(GameState board){
 
     for (uint64_t b = whitePawnsRight; b != 0; b &= (b - 1)){
         int p = __builtin_ctzll(b);
+        if (p == board.enPassantSquare && board.enPassantSquare != 0){
+            uint32_t mv = 0x00000000;
+            mv = mv & ~(0x3F << 26) | (((p - 9) & 0x3F) << 26);
+            mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+            mv = mv & ~(0x7 << 17) | ((7 & 0x7) << 17);
+            mv |= (1u << 13);
+            moves.push_back(mv);
+            continue;
+        }
         int cl = getColorBySquare(board, p);
         if (cl >= 0){
             continue;
@@ -283,9 +554,11 @@ std::vector<uint32_t> whitePawnMoves(GameState board){
         mv = mv & ~(0x3F << 26) | (((p - 9) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
+        //kan skrive blokken under bedre
         if (p >= 56){
-            for (int i = 1; i < 5; i++){
-                uint32_t m = mv | ((i & 0x3) << 15);
+            for (int i = 0; i < 4; i++){
+                uint32_t m = mv | (((i) & 0x3) << 15);
+                m |= (1u << 12); 
                 moves.push_back(m);
             }
         } else {
@@ -296,7 +569,7 @@ std::vector<uint32_t> whitePawnMoves(GameState board){
     return moves;
 }
 
-std::vector<uint32_t> blackPawnMoves(GameState board){
+std::vector<uint32_t> blackPawnMoves(const GameState& board){
     uint64_t singlePushes = blackSinglePawnPushTargets(board);
     uint64_t doublePushes = blackDoublePawnPushTargets(board);
     uint64_t blackPawnsLeft = blackPawnsLeftAttackTargets(board);
@@ -310,9 +583,11 @@ std::vector<uint32_t> blackPawnMoves(GameState board){
         mv = mv & ~(0x3F << 26) | (((p + 8) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((7 & 0x7) << 17);
-        if (p >= 56){
-            for (int i = 1; i < 5; i++){
-                uint32_t m = mv | ((i & 0x3) << 15);
+        //kan skrive blokken under bedre
+        if (p < 8){
+            for (int i = 0; i < 4; i++){
+                uint32_t m = mv | (((i) & 0x3) << 15);
+                m |= (1u << 12);
                 moves.push_back(m);
             }
         } else {
@@ -331,6 +606,15 @@ std::vector<uint32_t> blackPawnMoves(GameState board){
 
     for (uint64_t b = blackPawnsLeft; b != 0; b &= (b - 1)){
         int p = __builtin_ctzll(b);
+        if (p == board.enPassantSquare && board.enPassantSquare != 0){
+            uint32_t mv = 0x00000000;
+            mv = mv & ~(0x3F << 26) | (((p + 7) & 0x3F) << 26);
+            mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+            mv = mv & ~(0x7 << 17) | ((7 & 0x7) << 17);
+            mv |= (1u << 13);
+            moves.push_back(mv);
+            continue;
+        }
         int cl = getColorBySquare(board, p);
         if (cl <= 0){
             continue;
@@ -340,9 +624,11 @@ std::vector<uint32_t> blackPawnMoves(GameState board){
         mv = mv & ~(0x3F << 26) | (((p + 7) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
+        //kan skrive blokken under bedre
         if (p < 8){
-            for (int i = 1; i < 5; i++){
-                uint32_t m = mv | ((i & 0x3) << 15);
+            for (int i = 0; i < 4; i++){
+                uint32_t m = mv | (((i) & 0x3) << 15);
+                m |= (1u << 12); 
                 moves.push_back(m);
             }
         } else {
@@ -352,6 +638,15 @@ std::vector<uint32_t> blackPawnMoves(GameState board){
 
     for (uint64_t b = blackPawnsRight; b != 0; b &= (b - 1)){
         int p = __builtin_ctzll(b);
+        if (p == board.enPassantSquare && board.enPassantSquare != 0){
+            uint32_t mv = 0x00000000;
+            mv = mv & ~(0x3F << 26) | (((p + 9) & 0x3F) << 26);
+            mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
+            mv = mv & ~(0x7 << 17) | ((7 & 0x7) << 17);
+            mv |= (1u << 13);
+            moves.push_back(mv);
+            continue;
+        }
         int cl = getColorBySquare(board, p);
         if (cl <= 0){
             continue;
@@ -361,9 +656,11 @@ std::vector<uint32_t> blackPawnMoves(GameState board){
         mv = mv & ~(0x3F << 26) | (((p + 9) & 0x3F) << 26);
         mv = mv & ~(0x3F << 20) | ((p & 0x3F) << 20);
         mv = mv & ~(0x7 << 17) | ((pc & 0x7) << 17);
+        //kan skrive blokken under bedre
         if (p < 8){
-            for (int i = 1; i < 5; i++){
-                uint32_t m = mv | ((i & 0x3) << 15);
+            for (int i = 0; i < 4; i++){
+                uint32_t m = mv | (((i) & 0x3) << 15);
+                m |= (1u << 12); 
                 moves.push_back(m);
             }
         } else {
@@ -372,4 +669,54 @@ std::vector<uint32_t> blackPawnMoves(GameState board){
     }
 
     return moves;
+}
+
+uint64_t attackedSquares(const GameState& board, bool whiteToMove){
+    uint64_t targets = 0x00000000;
+    uint64_t knights; 
+    uint64_t bishops; 
+    uint64_t rooks; 
+    uint64_t queens; 
+    if (whiteToMove){
+        targets |= whitePawnsLeftAttackTargets(board);
+        targets |= whitePawnsRightAttackTargets(board);
+        knights = board.whiteKnights;
+        bishops = board.whiteBishops; 
+        rooks = board.whiteRooks; 
+        queens = board.whiteQueens; 
+        targets |= pieceAttacks[5][__builtin_ctzll(board.whiteKing)];
+    } else {
+        targets |= blackPawnsLeftAttackTargets(board);
+        targets |= blackPawnsRightAttackTargets(board);
+        knights = board.blackKnights; 
+        bishops = board.blackBishops;
+        rooks = board.blackRooks; 
+        queens = board.blackQueens; 
+        targets |= pieceAttacks[5][__builtin_ctzll(board.blackKing)];
+    }
+    for (uint64_t bb = knights; bb != 0; bb &= (bb - 1)){
+        int sq = __builtin_ctzll(bb);
+        targets |= pieceAttacks[1][sq];
+    }
+    for (uint64_t bb = bishops; bb != 0; bb &= (bb - 1)){
+        int sq = __builtin_ctzll(bb);
+        targets |= slidingPieceAttacks(board, 2, sq);
+    }
+    for (uint64_t bb = rooks; bb != 0; bb &= (bb - 1)){
+        int sq = __builtin_ctzll(bb);
+        targets |= slidingPieceAttacks(board, 3, sq);
+    }
+    for (uint64_t bb = queens; bb != 0; bb &= (bb - 1)){
+        int sq = __builtin_ctzll(bb);
+        targets |= slidingPieceAttacks(board, 4, sq);
+    }
+    return targets; 
+}
+
+GameResult getGameResult(const GameState& board){
+    std::vector<uint32_t> legalMoves = getLegalMoves(board);
+    if (!legalMoves.empty()) return ACTIVE;
+    uint64_t kingBoard = board.whiteToMove ? board.whiteKing : board.blackKing;
+    if (attackedSquares(board, !board.whiteToMove) & kingBoard) return CHECKMATE;
+    return STALEMATE;
 }

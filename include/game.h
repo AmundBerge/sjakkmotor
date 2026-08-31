@@ -13,6 +13,7 @@ class Game {
         void initializeBoard();
         GameState board;
         bool makeMove(uint32_t move);
+        bool readUserMove(uint32_t move);
         bool isValidMove(uint32_t move);
 
         void updateBitboards();

@@ -24,7 +24,7 @@ void printMoveSquares(uint32_t move){
     std::cout << start << " " << end << std::endl;
 }
 
-void printChessBoard(GameState board){
+void printChessBoard(const GameState& board){
     std::string out;
     for (int i = 56; i >= 0; i -= 8){
         for (int j = 0; j < 8; j++){
@@ -58,6 +58,14 @@ void printChessBoard(GameState board){
         out += '\n';
     }
     std::cout << out << std::endl;
+}
+
+void printInt32(uint32_t val){ 
+    for (int i = 31; i >= 0; i--){
+        std::cout << ((val >> i) & 1);
+        if (i % 8 == 0) std::cout << ' ';
+    }
+    std::cout << std::endl;
 }
 
 uint64_t northRay(int square){
@@ -245,7 +253,7 @@ void initializeBehind(){
             if (i_r == j_r){
                 if (i_f > j_f){
                     for (int k = j_f - 1; k >= 0; k--){
-                        behind[i][j] |= 1ULL << (j + j_f - k);
+                        behind[i][j] |= 1ULL << (j - j_f + k);
                     }
                 } else {
                     for (int k = j_f + 1; k < 8; k++){
@@ -273,7 +281,7 @@ void initializeBehind(){
     }
 }
 
-int getPieceBySquare(GameState board, int square){
+int getPieceBySquare(const GameState& board, int square){
     uint64_t b = 1ULL << square;
 
     if (board.whitePawns & b || board.blackPawns & b){
@@ -297,7 +305,7 @@ int getPieceBySquare(GameState board, int square){
     return -1;
 }
 
-int getColorBySquare(GameState board, int square){
+int getColorBySquare(const GameState& board, int square){
     uint64_t b = 1ULL << square;
 
     if (board.whitePieces & b){
@@ -323,11 +331,12 @@ int sq2int(std::string square){
     return f + r * 8;
 }
 
-std::pair<int, int> textMoveToSquares(GameState board, std::string textMove){
+std::pair<int, int> textMoveToSquares(const GameState& board, std::string textMove){
     if (textMove.size() != 4){
         std::cerr << "OH NO" << std::endl;
     }
     int first = sq2int(textMove.substr(0, 2));
     int second = sq2int(textMove.substr(2, 2));
+
     return std::make_pair(first, second);
 }

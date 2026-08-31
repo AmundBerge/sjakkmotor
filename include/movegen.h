@@ -8,27 +8,34 @@
 #include <vector> 
 #include <cstdint> 
 
+std::vector<uint32_t> getPlayerMoves(const GameState& board); 
+std::vector<uint32_t> getLegalMoves(const GameState& board);
 
-std::vector<uint32_t> getPlayerMoves(GameState board); 
+std::vector<uint32_t> knightMoves(const GameState& board, int sq);
 
-std::vector<uint32_t> knightMoves(GameState board, int sq);
+uint64_t slidingPieceAttacks(const GameState& board, int pc, int sq);
+std::vector<uint32_t> bishopMoves(const GameState& board, int sq);
+std::vector<uint32_t> rookMoves(const GameState& board, int sq);
+std::vector<uint32_t> queenMoves(const GameState& board, int sq);
+std::vector<uint32_t> kingMoves(const GameState& board, int sq);
 
-uint64_t slidingPieceAttacks(GameState board, int pc, int sq);
-std::vector<uint32_t> bishopMoves(GameState board, int sq);
-std::vector<uint32_t> rookMoves(GameState board, int sq);
-std::vector<uint32_t> queenMoves(GameState board, int sq);
-std::vector<uint32_t> kingMoves(GameState board, int sq);
+uint64_t whiteSinglePawnPushTargets(const GameState& board);
+uint64_t whiteDoublePawnPushTargets(const GameState& board);
+uint64_t blackSinglePawnPushTargets(const GameState& board);
+uint64_t blackDoublePawnPushTargets(const GameState& board);
+uint64_t whitePawnsLeftAttackTargets(const GameState& board);
+uint64_t whitePawnsRightAttackTargets(const GameState& board);
+uint64_t blackPawnsLeftAttackTargets(const GameState& board);
+uint64_t blackPawnsRightAttackTargets(const GameState& board);
 
-uint64_t whiteSinglePawnPushTargets(GameState board);
-uint64_t whiteDoublePawnPushTargets(GameState board);
-uint64_t blackSinglePawnPushTargets(GameState board);
-uint64_t blackDoublePawnPushTargets(GameState board);
-uint64_t whitePawnsLeftAttackTargets(GameState board);
-uint64_t whitePawnsRightAttackTargets(GameState board);
-uint64_t blackPawnsLeftAttackTargets(GameState board);
-uint64_t blackPawnsRightAttackTargets(GameState board);
+uint64_t attackedSquares(const GameState& board, bool whiteToMove); 
 
-std::vector<uint32_t> whitePawnMoves(GameState board);
-std::vector<uint32_t> blackPawnMoves(GameState board);
+std::vector<uint32_t> whitePawnMoves(const GameState& board);
+std::vector<uint32_t> blackPawnMoves(const GameState& board);
+
+bool applyMove(GameState& board, uint32_t move);
+
+enum GameResult { ACTIVE, CHECKMATE, STALEMATE };
+GameResult getGameResult(const GameState& board);
 
 #endif

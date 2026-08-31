@@ -12,7 +12,8 @@
 
 void printBitboard(uint64_t bitboard);
 void printMoveSquares(uint32_t move);
-void printChessBoard(GameState board);
+void printChessBoard(const GameState& board);
+void printInt32(uint32_t val);
 
 uint64_t northRay(int square);
 uint64_t southRay(int square);
@@ -38,10 +39,10 @@ void initializePieceAttacks();
 void initializeBlockers();
 void initializeBehind();
 
-int getPieceBySquare(GameState board, int square);
-int getColorBySquare(GameState board, int square);
+int getPieceBySquare(const GameState& board, int square);
+int getColorBySquare(const GameState& board, int square);
 
 int sq2int(std::string sq);
-std::pair<int, int> textMoveToSquares(GameState board, std::string textMove);
+std::pair<int, int> textMoveToSquares(const GameState& board, std::string textMove);
 
 #endif

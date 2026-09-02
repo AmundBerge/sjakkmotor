@@ -34,6 +34,11 @@ bool applyMove(GameState& board, uint32_t move){
                 board.whiteBishops |= 1ULL << endSquare;
                 break;
             case 3:
+                if (startSquare == 7){
+                    board.whiteCanCastleShort = false; 
+                } else if (startSquare == 0){
+                    board.whiteCanCastleLong = false;
+                }
                 board.whiteRooks &= ~(1ULL << startSquare);
                 board.whiteRooks |= 1ULL << endSquare;
                 break;
@@ -42,6 +47,7 @@ bool applyMove(GameState& board, uint32_t move){
                 board.whiteQueens |= 1ULL << endSquare;
                 break;
             case 5:
+                board.whiteCanCastleShort = board.whiteCanCastleLong = false; 
                 board.whiteKing = 1ULL << endSquare;
                 break;
             case 6:
@@ -53,6 +59,14 @@ bool applyMove(GameState& board, uint32_t move){
         }
     } else {
         if (cl != -1){
+            printInt32(move);
+            printChessBoard(board);
+            std::cout << board.whiteToMove << std::endl;
+            std::cout << board.whiteBishops << std::endl;
+            std::cout << board.blackBishops << std::endl;
+            std::cout << board.whiteRooks << std::endl;
+            std::cout << board.whitePieces << std::endl;
+            
             std::cout << "what is happening?" << std::endl;
         }
         switch (pc){
@@ -70,11 +84,7 @@ bool applyMove(GameState& board, uint32_t move){
                 break;
             case 3:
 
-                if (startSquare == 7){
-                    board.whiteCanCastleShort = false;
-                } else if (startSquare == 0){
-                    board.whiteCanCastleLong = false;
-                } else if (startSquare == 63){
+                if (startSquare == 63){
                     board.blackCanCastleShort = false; 
                 } else if (startSquare == 56){
                     board.blackCanCastleLong = false; 
@@ -88,13 +98,7 @@ bool applyMove(GameState& board, uint32_t move){
                 board.blackQueens |= 1ULL << endSquare;
                 break;
             case 5:
-
-                if (board.whiteToMove){
-                    board.whiteCanCastleShort = board.whiteCanCastleLong = false; 
-                } else {
-                    board.blackCanCastleShort = board.blackCanCastleLong = false; 
-                }
-                
+                board.blackCanCastleShort = board.blackCanCastleLong = false; 
                 board.blackKing = 1ULL << endSquare;
                 break;
             case 6:
@@ -120,11 +124,25 @@ bool applyMove(GameState& board, uint32_t move){
             break;
         case 3:
             board.whiteToMove ? board.blackRooks &= ~(1ULL << endSquare) : board.whiteRooks &= ~(1ULL << endSquare);
+            if (board.whiteToMove){
+                if (endSquare == 63){
+                    board.blackCanCastleShort = false; 
+                } else if (endSquare == 56){
+                    board.blackCanCastleLong = false;
+                }
+            } else {
+                if (endSquare == 7){
+                    board.whiteCanCastleShort = false;
+                } else if (endSquare == 0){
+                    board.whiteCanCastleLong = false;
+                }
+            }
             break;
         case 4: 
             board.whiteToMove ? board.blackQueens &= ~(1ULL << endSquare) : board.whiteQueens &= ~(1ULL << endSquare);
             break;
         case 5: 
+        // gir ikke mening aa fjerne kongen
             board.whiteToMove ? board.blackKing &= ~(1ULL << endSquare) : board.whiteKing &= ~(1ULL << endSquare);
             break;
         case 7: 
@@ -134,7 +152,6 @@ bool applyMove(GameState& board, uint32_t move){
     }
 
     if (move & (1u << 12)){
-        std::cout << "PROMO PROMO" << std::endl;
         int promotedPiece = move >> 15 & 0x3;
         switch (promotedPiece){
             case 0:
@@ -193,7 +210,11 @@ bool applyMove(GameState& board, uint32_t move){
         board.blackRooks |= 1ULL << 59;
     }
 
-    board.moveHistory.push_back(move);
+    if (pc == 0 || capturedPiece != 7){
+        board.halfMoveCounter = 0;
+    } else {
+        board.halfMoveCounter++;
+    }
 
     board.whitePieces = board.whitePawns | board.whiteKnights | board.whiteBishops | board.whiteRooks | board.whiteQueens | board.whiteKing;
     board.blackPieces = board.blackPawns | board.blackKnights | board.blackBishops | board.blackRooks | board.blackQueens | board.blackKing;
@@ -398,14 +419,14 @@ std::vector<uint32_t> kingMoves(const GameState& board, int square){
     if (board.whiteToMove){
         if (board.whiteCanCastleShort){
             if (!(attackedSquares(board, false) & ((1ULL << 4) | (1ULL << 5) | (1ULL << 6))) && 
-                (!(board.whitePieces & (1ULL << 5) || (board.whitePieces & (1ULL << 6))))
+                (!(board.occupiedSquares & (1ULL << 5) || (board.occupiedSquares & (1ULL << 6))))
             ){
                 moves.push_back(0x10604000);
             }
         }
         if (board.whiteCanCastleLong){
             if (!(attackedSquares(board, false) & ((1ULL << 4) | (1ULL << 3) | (1ULL << 2))) && 
-                (!(board.whitePieces & (1ULL << 3) || (board.whitePieces & (1ULL << 2)) || (board.whitePieces & (1ULL << 1))))
+                (!(board.occupiedSquares & (1ULL << 3) || (board.occupiedSquares & (1ULL << 2)) || (board.occupiedSquares & (1ULL << 1))))
             ){
                 moves.push_back(0x10204000);
             }
@@ -415,14 +436,14 @@ std::vector<uint32_t> kingMoves(const GameState& board, int square){
     if (!board.whiteToMove){
         if (board.blackCanCastleShort){
             if (!(attackedSquares(board, true) & ((1ULL << 60) | (1ULL << 61) | (1ULL << 62))) &&
-                (!(board.blackPieces & (1ULL << 61) || (board.blackPieces & (1ULL << 62))))
+                (!(board.occupiedSquares & (1ULL << 61) || (board.occupiedSquares & (1ULL << 62))))
             ){
                 moves.push_back(0xf3e04000);
             }
         }
         if (board.blackCanCastleLong){
             if (!(attackedSquares(board, true) & ((1ULL << 60) | (1ULL << 59) | (1ULL << 58))) &&
-                (!(board.blackPieces & (1ULL << 59) || (board.blackPieces & (1ULL << 58)) || (board.blackPieces & (1ULL << 57))))
+                (!(board.occupiedSquares & (1ULL << 59) || (board.occupiedSquares & (1ULL << 58)) || (board.occupiedSquares & (1ULL << 57))))
             ){
                 moves.push_back(0xf3a04000);
             }
@@ -713,10 +734,55 @@ uint64_t attackedSquares(const GameState& board, bool whiteToMove){
     return targets; 
 }
 
+bool checkPositionEquality(const Position& pos1, const Position& pos2){
+    return pos1.whitePawns == pos2.whitePawns && pos1.whiteKnights == pos2.whiteKnights && pos1.whiteBishops == pos2.whiteBishops &&
+    pos1.whiteRooks == pos2.whiteRooks && pos1.whiteQueens == pos2.whiteQueens && pos1.whiteKing == pos2.whiteKing &&
+    pos1.blackPawns == pos2.blackPawns && pos1.blackKnights == pos2.blackKnights && pos1.blackBishops == pos2.blackBishops &&
+    pos1.blackRooks == pos2.blackRooks && pos1.blackQueens == pos2.blackQueens && pos1.blackKing == pos2.blackKing &&
+    pos1.whiteCanCastleShort == pos2.whiteCanCastleShort && pos1.whiteCanCastleLong == pos2.whiteCanCastleLong &&
+    pos1.blackCanCastleShort == pos2.blackCanCastleShort && pos1.blackCanCastleLong == pos2.blackCanCastleLong &&
+    pos1.whiteToMove == pos2.whiteToMove && pos1.enPassantSquare == pos2.enPassantSquare;
+}
+// grov kode, huske å skifte til zobrist-hashing
+bool checkThreefoldRepetition(const GameState& board){
+    Position position; 
+    position.whitePawns = board.whitePawns;
+    position.whiteKnights = board.whiteKnights; 
+    position.whiteBishops = board.whiteBishops;
+    position.whiteRooks = board.whiteRooks; 
+    position.whiteQueens = board.whiteQueens; 
+    position.whiteKing = board.whiteKing; 
+    position.blackPawns = board.blackPawns; 
+    position.blackKnights = board.blackKnights; 
+    position.blackBishops = board.blackBishops; 
+    position.blackRooks = board.blackRooks; 
+    position.blackQueens = board.blackQueens; 
+    position.blackKing = board.blackKing; 
+    position.whiteCanCastleShort = board.whiteCanCastleShort; 
+    position.whiteCanCastleLong = board.whiteCanCastleLong; 
+    position.blackCanCastleShort = board.blackCanCastleShort;
+    position.blackCanCastleLong = board.blackCanCastleLong;
+    position.whiteToMove = board.whiteToMove;
+    position.enPassantSquare = board.enPassantSquare;
+
+    int count = 0; 
+    for (int i = 0; i < board.positionHistory.size(); i++){
+        if (checkPositionEquality(position, board.positionHistory[i])){
+            count++;
+        }
+    }
+    return count >= 3;
+}
+
 GameResult getGameResult(const GameState& board){
     std::vector<uint32_t> legalMoves = getLegalMoves(board);
-    if (!legalMoves.empty()) return ACTIVE;
-    uint64_t kingBoard = board.whiteToMove ? board.whiteKing : board.blackKing;
-    if (attackedSquares(board, !board.whiteToMove) & kingBoard) return CHECKMATE;
-    return STALEMATE;
+    if (legalMoves.empty()){
+        uint64_t kingBoard = board.whiteToMove ? board.whiteKing : board.blackKing;
+        if (attackedSquares(board, !board.whiteToMove) & kingBoard) return CHECKMATE;
+        return STALEMATE;
+    }
+    if (board.halfMoveCounter >= 100) return MOVE50; // maa sjekke litt mer opp i offisielle regler, bedre kode aa ha denne
+    // foerst, men sjakkmatt paa trekk #100 skal vaere sjakkmatt, ikke remis.
+    if (checkThreefoldRepetition(board)) return THREEFOLD_REPETITION; 
+    return ACTIVE;
 }

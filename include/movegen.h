@@ -35,7 +35,10 @@ std::vector<uint32_t> blackPawnMoves(const GameState& board);
 
 bool applyMove(GameState& board, uint32_t move);
 
-enum GameResult { ACTIVE, CHECKMATE, STALEMATE };
+bool checkPositionEquality(const Position& pos1, const Position& pos2);
+bool checkThreefoldRepetition(const GameState& board);
+
+enum GameResult { ACTIVE, CHECKMATE, STALEMATE, MOVE50, THREEFOLD_REPETITION};
 GameResult getGameResult(const GameState& board);
 
 #endif

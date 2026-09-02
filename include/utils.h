@@ -45,4 +45,6 @@ int getColorBySquare(const GameState& board, int square);
 int sq2int(std::string sq);
 std::pair<int, int> textMoveToSquares(const GameState& board, std::string textMove);
 
+int countBits(uint64_t bb);
+
 #endif

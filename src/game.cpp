@@ -86,6 +86,29 @@ bool Game::makeMove(uint32_t mv){
     for (int i = 0; i < legalMoves.size(); i++){
         if (mv == legalMoves[i]){
             applyMove(board, mv);
+            board.moveHistory.push_back(mv);
+            
+            Position position; 
+            position.whitePawns = board.whitePawns;
+            position.whiteKnights = board.whiteKnights; 
+            position.whiteBishops = board.whiteBishops;
+            position.whiteRooks = board.whiteRooks; 
+            position.whiteQueens = board.whiteQueens; 
+            position.whiteKing = board.whiteKing; 
+            position.blackPawns = board.blackPawns; 
+            position.blackKnights = board.blackKnights; 
+            position.blackBishops = board.blackBishops; 
+            position.blackRooks = board.blackRooks; 
+            position.blackQueens = board.blackQueens; 
+            position.blackKing = board.blackKing; 
+            position.whiteCanCastleShort = board.whiteCanCastleShort; 
+            position.whiteCanCastleLong = board.whiteCanCastleLong; 
+            position.blackCanCastleShort = board.blackCanCastleShort;
+            position.blackCanCastleLong = board.blackCanCastleLong;
+            position.whiteToMove = board.whiteToMove;
+            position.enPassantSquare = board.enPassantSquare;
+
+            board.positionHistory.push_back(position);
             return true;
         }
     }

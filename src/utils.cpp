@@ -340,3 +340,12 @@ std::pair<int, int> textMoveToSquares(const GameState& board, std::string textMo
 
     return std::make_pair(first, second);
 }
+
+int countBits(uint64_t bb){
+    int count = 0;
+    while (bb != 0){
+        bb &= bb - 1;
+        count++;
+    }
+    return count;
+}

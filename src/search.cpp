@@ -5,6 +5,7 @@
 #include <cstdint> 
 #include <vector>
 #include <random>
+#include <algorithm>
 
 uint32_t randomMove(const std::vector<uint32_t> moves){
     std::random_device rd; 
@@ -14,10 +15,31 @@ uint32_t randomMove(const std::vector<uint32_t> moves){
     return mv;
 }
 
+int moveValue(uint32_t move){
+    int capturedPiece = (0x000E0000 & move) >> 17;
+    switch (capturedPiece){
+        case 0: 
+            return 100; 
+        case 1: 
+            return 300;
+        case 2: 
+            return 300;
+        case 3:
+            return 500;
+        case 4:
+            return 900;
+        default:
+            return 0;
+    }
+}
+
 int negamax(GameState board, int depth, int alpha, int beta){
     std::vector<uint32_t> legalMoves = getLegalMoves(board);
     if (legalMoves.empty()) return evaluateNoMoves(board);
     if (depth == 0) return evaluatePosition(board);
+    std::sort(legalMoves.begin(), legalMoves.end(), [](uint32_t mov1, uint32_t mov2){
+        return moveValue(mov1) > moveValue(mov2);
+    });
     int best = -100000;
     for (int i = 0; i < legalMoves.size(); i++){
         GameState child = board;
@@ -34,6 +56,9 @@ int negamax(GameState board, int depth, int alpha, int beta){
 
 uint32_t findMove(const GameState& board, int depth){
     std::vector<uint32_t> moves = getLegalMoves(board);
+    std::sort(moves.begin(), moves.end(), [](uint32_t mov1, uint32_t mov2){
+        return moveValue(mov1) > moveValue(mov2);
+    });
     uint32_t bestMove = moves[0];
     int best = -100000;
     for (int i = 0; i < moves.size(); i++){
